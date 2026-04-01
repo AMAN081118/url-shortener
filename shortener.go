@@ -23,35 +23,20 @@ func NewURLShortener(storage Storage) *URLShortener {
 }
 
 func (s *URLShortener) Shorten(longURL string) (string, error) {
-
-	// validate empty URL
 	if len(longURL) == 0 {
 		return "", ErrEmptyURL
 	}
-	// validate format
+
 	if !isValidURL(longURL) {
 		return "", ErrInvalidURL
 	}
 
-	// check if URL already exists in storage
-	existingCode, exists := s.storage.GetCodeByURL(longURL)
-
-	// if exists, return existingCode, nil
-	if exists {
-		return existingCode, nil
-	}
-
-	// generate next ID
-	id := atomic.AddUint64(&s.idCounter, 1) - 1
-
-	// encode ID to base62
-	code := encodeBase62(id)
-
-	// save into storage
-	s.storage.Save(code, longURL)
+	code := s.storage.GetOrCreate(longURL, func() string {
+		id := atomic.AddUint64(&s.idCounter, 1) - 1
+		return encodeBase62(id)
+	})
 
 	return code, nil
-
 }
 
 func (s *URLShortener) Resolve(code string) (string, bool) {

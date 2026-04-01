@@ -7,6 +7,8 @@ type Storage interface {
 
 	GetURLByCode(code string) (string, bool)
 
+	GetOrCreate(longURL string, generate func() string) string
+
 	Save(code, longURL string)
 
 	Count() int
@@ -34,6 +36,22 @@ func (s *InMemoryStorage) GetCodeByURL(longURL string) (string, bool) {
 	}
 
 	return "", false
+}
+
+func (s *InMemoryStorage) GetOrCreate(longURL string, generate func() string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if code, exists := s.urlToCode[longURL]; exists {
+		return code
+	}
+
+	code := generate()
+
+	s.urlToCode[longURL] = code
+	s.codeToURL[code] = longURL
+
+	return code
 }
 
 func (s *InMemoryStorage) GetURLByCode(code string) (string, bool) {
