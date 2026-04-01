@@ -8,7 +8,8 @@ import (
 )
 
 func TestHandleShorten_Success(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 	server := NewServer(shortener)
 
 	body := bytes.NewBuffer([]byte(`{"url":"https://google.com"}`))
@@ -29,7 +30,8 @@ func TestHandleShorten_Success(t *testing.T) {
 }
 
 func TestHandleShorten_InvalidMethod(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 	server := NewServer(shortener)
 
 	req := httptest.NewRequest(http.MethodGet, "/shorten", nil)
@@ -43,7 +45,8 @@ func TestHandleShorten_InvalidMethod(t *testing.T) {
 }
 
 func TestHandleShorten_InvalidJSON(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 	server := NewServer(shortener)
 
 	body := bytes.NewBuffer([]byte(`{"url":}`))
@@ -60,7 +63,8 @@ func TestHandleShorten_InvalidJSON(t *testing.T) {
 }
 
 func TestHandleShorten_InvalidURL(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 	server := NewServer(shortener)
 
 	body := bytes.NewBuffer([]byte(`{"url":"not-real-url"}`))
@@ -77,7 +81,8 @@ func TestHandleShorten_InvalidURL(t *testing.T) {
 }
 
 func TestHandleResolve_Success(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	code, err := shortener.Shorten("https://www.google.com")
 	if err != nil {
@@ -102,7 +107,8 @@ func TestHandleResolve_Success(t *testing.T) {
 }
 
 func TestHandleResolve_NotFound(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 	server := NewServer(shortener)
 
 	req := httptest.NewRequest(http.MethodGet, "/unknown", nil)
@@ -116,7 +122,8 @@ func TestHandleResolve_NotFound(t *testing.T) {
 }
 
 func TestHandleResolve_Root(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 	server := NewServer(shortener)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)

@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"net/url"
-	"sync"
+	"sync/atomic"
 )
 
 const base62Alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -12,57 +12,64 @@ var ErrEmptyURL = errors.New("url is empty")
 var ErrInvalidURL = errors.New("url is invalid")
 
 type URLShortener struct {
-	mu        sync.RWMutex
+	storage   Storage
 	idCounter uint64
-	codeToURL map[string]string
-	urlToCode map[string]string
 }
 
-func NewURLShortener() *URLShortener {
+func NewURLShortener(storage Storage) *URLShortener {
 	return &URLShortener{
-		codeToURL: make(map[string]string),
-		urlToCode: make(map[string]string),
+		storage: storage,
 	}
 }
 
 func (s *URLShortener) Shorten(longURL string) (string, error) {
-	if longURL == "" {
+
+	// validate empty URL
+	if len(longURL) == 0 {
 		return "", ErrEmptyURL
 	}
-
+	// validate format
 	if !isValidURL(longURL) {
 		return "", ErrInvalidURL
 	}
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	// check if URL already exists in storage
+	existingCode, exists := s.storage.GetCodeByURL(longURL)
 
-	if code, exists := s.urlToCode[longURL]; exists {
-		return code, nil
+	// if exists, return existingCode, nil
+	if exists {
+		return existingCode, nil
 	}
 
-	code := encodeBase62(s.idCounter)
-	s.idCounter++
+	// generate next ID
+	id := atomic.AddUint64(&s.idCounter, 1) - 1
 
-	s.codeToURL[code] = longURL
-	s.urlToCode[longURL] = code
+	// encode ID to base62
+	code := encodeBase62(id)
+
+	// save into storage
+	s.storage.Save(code, longURL)
 
 	return code, nil
+
 }
 
 func (s *URLShortener) Resolve(code string) (string, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
 
-	longURL, exists := s.codeToURL[code]
-	return longURL, exists
+	// delegate to storage
+	resolvedURL, exists := s.storage.GetURLByCode(code)
+
+	if exists {
+		return resolvedURL, true
+	}
+	return "", false
 }
 
 func (s *URLShortener) Count() int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return len(s.codeToURL)
+	// TODO:
+	// delegate to storage
+	count := s.storage.Count()
+	return count
 }
 
 func isValidURL(rawURL string) bool {

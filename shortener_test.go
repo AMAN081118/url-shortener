@@ -5,7 +5,8 @@ import "testing"
 const testURL = "https://google.com"
 
 func TestShortenAndResolve(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	code, err := shortener.Shorten(testURL)
 	if err != nil {
@@ -23,7 +24,8 @@ func TestShortenAndResolve(t *testing.T) {
 }
 
 func TestShortenSameURLReturnsSameCode(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	code1, err1 := shortener.Shorten(testURL)
 	if err1 != nil {
@@ -41,7 +43,8 @@ func TestShortenSameURLReturnsSameCode(t *testing.T) {
 }
 
 func TestShortenEmptyURL(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	_, err := shortener.Shorten("")
 	if err != ErrEmptyURL {
@@ -50,7 +53,8 @@ func TestShortenEmptyURL(t *testing.T) {
 }
 
 func TestShortenInvalidURL(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	_, err := shortener.Shorten("not-a-url")
 	if err != ErrInvalidURL {
@@ -59,7 +63,8 @@ func TestShortenInvalidURL(t *testing.T) {
 }
 
 func TestResolveUnknownCode(t *testing.T) {
-	shortener := NewURLShortener()
+	Storage := NewInMemoryStorage()
+	shortener := NewURLShortener(Storage)
 
 	_, ok := shortener.Resolve("unknown")
 	if ok {
@@ -68,7 +73,8 @@ func TestResolveUnknownCode(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	_, err1 := shortener.Shorten(testURL)
 	if err1 != nil {
@@ -91,7 +97,8 @@ func TestCount(t *testing.T) {
 	}
 }
 func TestDifferentURLsReturnDifferentCodes(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	code1, err := shortener.Shorten("https://google.com")
 	if err != nil {
@@ -108,7 +115,8 @@ func TestDifferentURLsReturnDifferentCodes(t *testing.T) {
 	}
 }
 func TestInitialCountIsZero(t *testing.T) {
-	shortener := NewURLShortener()
+	storage := NewInMemoryStorage()
+	shortener := NewURLShortener(storage)
 
 	if shortener.Count() != 0 {
 		t.Fatalf("expected initial count to be 0, got %d", shortener.Count())

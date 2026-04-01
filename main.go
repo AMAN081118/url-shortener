@@ -6,9 +6,15 @@ import (
 )
 
 func main() {
-	shortener := NewURLShortener()
-	server := NewServer(shortener)
+	// TODO:
+	// create in-memory storage
+	storage := NewInMemoryStorage()
 
+	// TODO:
+	// pass storage into shortener
+	shortener := NewURLShortener(storage)
+
+	server := NewServer(shortener)
 	mux := server.routes()
 
 	log.Println("server running on :8080")
