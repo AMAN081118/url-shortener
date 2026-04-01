@@ -1,0 +1,47 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Coverage files
+*.out
+coverage.*
+
+# Go workspace file
+go.work
+
+# Dependency directories (if any)
+vendor/
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env files
+.env
+.env.local
+
+# Build directories
+/bin/
+/dist/
+
+# Temporary files
+tmp/
+temp/
+
+# Air (hot reload)
+.air.toml
